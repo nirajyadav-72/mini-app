@@ -69,7 +69,7 @@ document.querySelectorAll('.theme-opt-btn').forEach(btn => {
         } else {
             // Fallback generation based on initials if user hides their profile photo settings
             const initials = `${user.first_name.charAt(0)}${user.last_name ? user.last_name.charAt(0) : ''}`.toUpperCase();
-            avatarNode.src = `https://ui-avatars.com{initials}&background=4f46e5&color=fff&bold=true`;
+            avatarNode.src = `https://ui-avatars.com/{initials}&background=4f46e5&color=fff&bold=true`;
         }
         
         console.log("Successfully extracted authenticated session profile for user ID:", user.id);
