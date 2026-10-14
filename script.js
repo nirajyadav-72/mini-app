@@ -1,5 +1,4 @@
 // script.js
-// 🚀 'question' फोल्डर की बाहरी फाइल से प्रश्नों को सिंक करना
 import { quizData } from './question/questions.js';
 
 let currentQuestionIdx = 0;
@@ -7,12 +6,58 @@ let score = 0;
 let wrongAnswers = 0;
 let timerInterval;
 let timeLeft = 15;
-const timeLimit = 15; // प्रति प्रश्न समय सीमा
+const timeLimit = 15;
+let globalPlayerName = "Player"; // User name storage global configuration buffer
 
-// इवेंट लिसनर्स (मॉड्यूल स्कोप के कारण बटन क्लिक सिंक करना)
+// Initialize Telegram WebApp SDK Data Payload Engine
+const tg = window.Telegram?.WebApp;
+if (tg) {
+    tg.ready();
+    tg.expand();
+}
+
+// Button Click Event Listeners Injection
 document.getElementById('start-btn').addEventListener('click', startQuiz);
 document.getElementById('next-btn').addEventListener('click', nextQuestion);
 document.getElementById('restart-btn').addEventListener('click', restartQuiz);
+
+// Theme Panel Triggers UI Handler Binding Maps
+const overlay = document.getElementById('theme-overlay');
+document.getElementById('theme-trigger-btn').addEventListener('click', () => overlay.classList.add('open'));
+document.getElementById('theme-close-btn').addEventListener('click', () => overlay.classList.remove('open'));
+
+document.querySelectorAll('.theme-opt-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.theme-opt-btn').forEach(b => b.classList.remove('data-active'));
+        e.target.classList.add('data-active');
+        const newTheme = e.target.getAttribute('data-theme');
+        document.body.className = '';
+        document.body.classList.add(newTheme);
+    });
+});
+
+// Dynamic Profile Extraction Sequence
+(function fetchTelegramUserData() {
+    if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const user = tg.initDataUnsafe.user;
+        globalPlayerName = user.first_name || "Player";
+        const displayLabel = user.username ? `@${user.username}` : `${user.first_name}`;
+        
+        document.getElementById('user-display-name').innerText = displayLabel;
+        document.getElementById('meta-user-id').innerText = user.id;
+        document.getElementById('meta-user-lang').innerText = user.language_code ? user.language_code.toUpperCase() : "HI";
+        
+        if (user.photo_url) {
+            document.getElementById('user-avatar').src = user.photo_url;
+        }
+    } else {
+        // Mock fallback setup configurations for standalone desktop environment validation tasks
+        globalPlayerName = "Guest Player";
+        document.getElementById('user-display-name').innerText = "Guest Player";
+        document.getElementById('meta-user-id').innerText = "7771481658";
+        document.getElementById('meta-user-lang').innerText = "HI (Test)";
+    }
+})();
 
 function switchScreen(screenId) {
     document.querySelectorAll('.screen').forEach(screen => {
@@ -122,6 +167,9 @@ function showResults() {
     document.getElementById('progress-bar').style.width = '100%';
     switchScreen('result-screen');
     
+    // Inject dynamic name variable to result header
+    document.getElementById('result-user-name').innerText = globalPlayerName;
+    
     document.getElementById('result-score').innerText = `${score}/${quizData.length}`;
     document.getElementById('stat-correct').innerText = score;
     document.getElementById('stat-wrong').innerText = wrongAnswers;
@@ -129,5 +177,4 @@ function showResults() {
 
 function restartQuiz() {
     switchScreen('start-screen');
-          }
-          
+}
