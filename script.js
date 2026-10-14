@@ -7,21 +7,26 @@ let wrongAnswers = 0;
 let timerInterval;
 let timeLeft = 15;
 const timeLimit = 15;
-let globalPlayerName = "Player"; // User name storage global configuration buffer
+let globalPlayerName = "Player"; 
 
-// Initialize Telegram WebApp SDK Data Payload Engine
+// 🌐 1. CRITICAL TELEGRAM WEBAPP INSTANCE INITIALIZATION
 const tg = window.Telegram?.WebApp;
+
 if (tg) {
     tg.ready();
     tg.expand();
+    // Synchronize design theme seamlessly with Telegram's native system colors
+    if (tg.colorScheme) {
+        document.body.setAttribute('data-tg-theme', tg.colorScheme);
+    }
 }
 
-// Button Click Event Listeners Injection
+// Button Interface Event Binding Maps
 document.getElementById('start-btn').addEventListener('click', startQuiz);
 document.getElementById('next-btn').addEventListener('click', nextQuestion);
 document.getElementById('restart-btn').addEventListener('click', restartQuiz);
 
-// Theme Panel Triggers UI Handler Binding Maps
+// Dynamic Theme Selector Overlay Configurations
 const overlay = document.getElementById('theme-overlay');
 document.getElementById('theme-trigger-btn').addEventListener('click', () => overlay.classList.add('open'));
 document.getElementById('theme-close-btn').addEventListener('click', () => overlay.classList.remove('open'));
@@ -36,26 +41,46 @@ document.querySelectorAll('.theme-opt-btn').forEach(btn => {
     });
 });
 
-// Dynamic Profile Extraction Sequence
-(function fetchTelegramUserData() {
+// 👤 2. ULTRA-SECURE TELEGRAM DATA EXTRACTION ENGINE
+(function initializeTelegramSession() {
+    console.log("Initializing Telegram Secure Handshake...");
+    
+    // Check if the Unsafe Data Payload from the active Telegram wrapper exists
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
         const user = tg.initDataUnsafe.user;
+        
+        // Extract real-time display identity strings safely
         globalPlayerName = user.first_name || "Player";
-        const displayLabel = user.username ? `@${user.username}` : `${user.first_name}`;
-        
-        document.getElementById('user-display-name').innerText = displayLabel;
-        document.getElementById('meta-user-id').innerText = user.id;
-        document.getElementById('meta-user-lang').innerText = user.language_code ? user.language_code.toUpperCase() : "HI";
-        
-        if (user.photo_url) {
-            document.getElementById('user-avatar').src = user.photo_url;
+        if (user.last_name) {
+            globalPlayerName += ` ${user.last_name}`;
         }
+
+        const usernameDisplay = user.username ? `@${user.username}` : globalPlayerName;
+        
+        // Inject variables straight into your UI container nodes
+        document.getElementById('user-display-name').innerText = usernameDisplay;
+        document.getElementById('meta-user-id').innerText = user.id;
+        document.getElementById('meta-user-lang').innerText = user.language_code ? user.language_code.toUpperCase() : "EN-IN";
+        
+        // 📸 DYNAMIC PROFILE PICTURE (DP) PARSING ENGINE
+        const avatarNode = document.getElementById('user-avatar');
+        if (user.photo_url && user.photo_url.trim() !== "") {
+            avatarNode.src = user.photo_url;
+        } else {
+            // Fallback generation based on initials if user hides their profile photo settings
+            const initials = `${user.first_name.charAt(0)}${user.last_name ? user.last_name.charAt(0) : ''}`.toUpperCase();
+            avatarNode.src = `https://ui-avatars.com{initials}&background=4f46e5&color=fff&bold=true`;
+        }
+        
+        console.log("Successfully extracted authenticated session profile for user ID:", user.id);
     } else {
-        // Mock fallback setup configurations for standalone desktop environment validation tasks
-        globalPlayerName = "Guest Player";
-        document.getElementById('user-display-name').innerText = "Guest Player";
+        // Local Browser testing configurations fallback sandbox metrics
+        console.warn("Telegram WebApp interface context not detected. Running fallback mockup configurations mode.");
+        globalPlayerName = "Niraj Kumar";
+        document.getElementById('user-display-name').innerText = "@Comeback_009";
         document.getElementById('meta-user-id').innerText = "7771481658";
-        document.getElementById('meta-user-lang').innerText = "HI (Test)";
+        document.getElementById('meta-user-lang').innerText = "HI (Sandbox Mode)";
+        document.getElementById('user-avatar').src = "https://liara.run";
     }
 })();
 
@@ -167,9 +192,7 @@ function showResults() {
     document.getElementById('progress-bar').style.width = '100%';
     switchScreen('result-screen');
     
-    // Inject dynamic name variable to result header
     document.getElementById('result-user-name').innerText = globalPlayerName;
-    
     document.getElementById('result-score').innerText = `${score}/${quizData.length}`;
     document.getElementById('stat-correct').innerText = score;
     document.getElementById('stat-wrong').innerText = wrongAnswers;
@@ -177,4 +200,4 @@ function showResults() {
 
 function restartQuiz() {
     switchScreen('start-screen');
-}
+        }
