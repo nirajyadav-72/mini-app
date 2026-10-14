@@ -9,24 +9,15 @@ let timeLeft = 15;
 const timeLimit = 15;
 let globalPlayerName = "Player"; 
 
-// 🌐 1. CRITICAL TELEGRAM WEBAPP INSTANCE INITIALIZATION
+// 🌐 1. टेलीग्राम वेबएप इनिशियलाइज़ेशन (बेहतर सुरक्षा चेक्स के साथ)
 const tg = window.Telegram?.WebApp;
 
-if (tg) {
-    tg.ready();
-    tg.expand();
-    // Synchronize design theme seamlessly with Telegram's native system colors
-    if (tg.colorScheme) {
-        document.body.setAttribute('data-tg-theme', tg.colorScheme);
-    }
-}
-
-// Button Interface Event Binding Maps
+// इवेंट लिसनर्स बटन बाइंडिंग
 document.getElementById('start-btn').addEventListener('click', startQuiz);
 document.getElementById('next-btn').addEventListener('click', nextQuestion);
 document.getElementById('restart-btn').addEventListener('click', restartQuiz);
 
-// Dynamic Theme Selector Overlay Configurations
+// थीम पैनल ट्रिगर्स
 const overlay = document.getElementById('theme-overlay');
 document.getElementById('theme-trigger-btn').addEventListener('click', () => overlay.classList.add('open'));
 document.getElementById('theme-close-btn').addEventListener('click', () => overlay.classList.remove('open'));
@@ -41,15 +32,15 @@ document.querySelectorAll('.theme-opt-btn').forEach(btn => {
     });
 });
 
-// 👤 2. ULTRA-SECURE TELEGRAM DATA EXTRACTION ENGINE
-(function initializeTelegramSession() {
-    console.log("Initializing Telegram Secure Handshake...");
+// 👤 2. टेलीग्राम डेटा एक्सट्रैक्शन फ़ंक्शन
+function loadTelegramUser() {
+    console.log("Checking Telegram WebApp context...");
     
-    // Check if the Unsafe Data Payload from the active Telegram wrapper exists
+    // टेलीग्राम के डेटा को पूरी तरह वेरीफाई करना
     if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
         const user = tg.initDataUnsafe.user;
         
-        // Extract real-time display identity strings safely
+        // नाम निकालना
         globalPlayerName = user.first_name || "Player";
         if (user.last_name) {
             globalPlayerName += ` ${user.last_name}`;
@@ -57,33 +48,45 @@ document.querySelectorAll('.theme-opt-btn').forEach(btn => {
 
         const usernameDisplay = user.username ? `@${user.username}` : globalPlayerName;
         
-        // Inject variables straight into your UI container nodes
+        // HTML एलिमेंट्स में यूज़र का लाइव डेटा सेट करना
         document.getElementById('user-display-name').innerText = usernameDisplay;
         document.getElementById('meta-user-id').innerText = user.id;
-        document.getElementById('meta-user-lang').innerText = user.language_code ? user.language_code.toUpperCase() : "EN-IN";
+        document.getElementById('meta-user-lang').innerText = user.language_code ? user.language_code.toUpperCase() : "HI";
         
-        // 📸 DYNAMIC PROFILE PICTURE (DP) PARSING ENGINE
+        // प्रोफ़ाइल पिक्चर सेट करना
         const avatarNode = document.getElementById('user-avatar');
         if (user.photo_url && user.photo_url.trim() !== "") {
             avatarNode.src = user.photo_url;
         } else {
-            // Fallback generation based on initials if user hides their profile photo settings
-            const initials = `${user.first_name.charAt(0)}${user.last_name ? user.last_name.charAt(0) : ''}`.toUpperCase();
-            avatarNode.src = `https://ui-avatars.com/{initials}&background=4f46e5&color=fff&bold=true`;
+            // फोटो न होने पर नाम के पहले अक्षरों का सुंदर अवतार बनाना
+            const initials = `${user.first_name.charAt(0)}`.toUpperCase();
+            avatarNode.src = `https://ui-avatars.com{initials}&background=4f46e5&color=fff&bold=true`;
         }
         
-        console.log("Successfully extracted authenticated session profile for user ID:", user.id);
+        // टेलीग्राम यूज़र के हिसाब से ऐप को रेडी और एक्सपैंड करना
+        tg.ready();
+        tg.expand();
+        if (tg.colorScheme) {
+            document.body.setAttribute('data-tg-theme', tg.colorScheme);
+        }
     } else {
-        // Local Browser testing configurations fallback sandbox metrics
-        console.warn("Telegram WebApp interface context not detected. Running fallback mockup configurations mode.");
-        globalPlayerName = "Niraj Kumar";
-        document.getElementById('user-display-name').innerText = "@Comeback_009";
-        document.getElementById('meta-user-id').innerText = "7771481658";
-        document.getElementById('meta-user-lang').innerText = "HI (Sandbox Mode)";
+        // ⚠️ यह हिस्सा केवल तभी चलेगा जब आप ऐप को साधारण क्रोम/सफ़ारी ब्राउज़र में टेस्ट करेंगे
+        console.log("Not in Telegram. Loading local browser fallback parameters.");
+        globalPlayerName = "Guest Player";
+        document.getElementById('user-display-name').innerText = "Guest Player";
+        document.getElementById('meta-user-id').innerText = "--------";
+        document.getElementById('meta-user-lang').innerText = "HI";
         document.getElementById('user-avatar').src = "https://liara.run";
     }
-})();
+}
 
+// ऐप लोड होते ही तुरंत यूज़र चेक रन करें
+loadTelegramUser();
+
+
+// ====================================================================
+// 🎮 क्विज़ गेम इंजन लॉजिक फ़ंक्शंस
+// ====================================================================
 function switchScreen(screenId) {
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
@@ -200,4 +203,4 @@ function showResults() {
 
 function restartQuiz() {
     switchScreen('start-screen');
-        }
+}
